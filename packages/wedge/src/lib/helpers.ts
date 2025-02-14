@@ -1,5 +1,5 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
-import { Conv2DParams, NNShadersOptions, WebGLData, WebGLDataNonTexture, WebGLDataTexture, WebGLDataTextureArray, WebGLOpNode } from "./types";
+import { Conv2DParams, WebGLData, WebGLDataNonTexture, WebGLDataTexture, WebGLDataTextureArray, WebGLOpNode, WedgeOptions } from "./types";
 
 export const getShapeUniformName = (nodeDataUniformName: string) => {
   return nodeDataUniformName + "Shape";
@@ -105,7 +105,7 @@ export function isWebGLDataNonTexture(data: WebGLData | null): data is WebGLData
 
 export function findRecommendedRenderTargets(
   outputTextureElementCount: number,
-  renderTargetBreakpoints: NNShadersOptions["renderTargetBreakpoints"]): number {
+  renderTargetBreakpoints: WedgeOptions["renderTargetBreakpoints"]): number {
 
   // Assuming the array is sorted by outputCount.
   for (let i = renderTargetBreakpoints.length - 1; i >= 0; i--) {

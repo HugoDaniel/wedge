@@ -1,5 +1,5 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
-import { NNShadersOptions, NodeWebGLDataMap, WebGLData, WebGLOpNode, WebGLOpNodeMap } from "../../types";
+import { NodeWebGLDataMap, WebGLData, WebGLOpNode, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull } from "../../webGLData";
 
 export function initNotSupportedOpWebGLData(
@@ -7,7 +7,7 @@ export function initNotSupportedOpWebGLData(
   node: Node,
   nodeWebGLDataMap: NodeWebGLDataMap,
   opNodeMap: WebGLOpNodeMap,
-  options: NNShadersOptions
+  options: WedgeOptions
 ): WebGLOpNode {
 
   let inputs: (WebGLData | null)[] = [];

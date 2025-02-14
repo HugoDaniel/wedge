@@ -1,6 +1,6 @@
 // Register WebGL backend.
 import { useEffect } from "react";
-import { NNShaders } from "../NNShaders";
+import { Wedge } from "../Wedge";
 
 import { GlobalState, ModelConfig } from "@/lib/types";
 import { Render2DPoints } from "../canvas/Render2DPoints";
@@ -114,7 +114,7 @@ let predictionTime = 0;
 // https://github.com/tensorflow/tfjs-models/blob/master/pose-detection/demos/live_video/src/index.js#L193-L201
 async function renderResultLoop(
   // detector: PoseDetector,
-  myPoseEstimator: PoseEstimator | ImageClassifier | NNShaders,
+  myPoseEstimator: PoseEstimator | ImageClassifier | Wedge,
   cameraCanvas2DContext: CanvasRenderingContext2D,
   offscreenCanvas: OffscreenCanvas,
   video: HTMLVideoElement,
@@ -169,7 +169,7 @@ async function renderResultLoop(
     if (typeof (myPoseEstimator as PoseEstimator).estimatePoses === "function") {
       // tfjs runtime:
       keypoints = await (myPoseEstimator as PoseEstimator).estimatePoses(video, timestamp);
-    } else if (typeof (myPoseEstimator as NNShaders).predict === "function") {
+    } else if (typeof (myPoseEstimator as Wedge).predict === "function") {
       // NNShader runtime:
       // const dummyTensor = ones([1, 256, 256, 4]);
       // const dummyTensorData = dummyTensor.dataSync();
@@ -181,9 +181,9 @@ async function renderResultLoop(
 
       const videoDataFloat32Array = new Float32Array(videoDataUint8ClampedArray);
 
-      (myPoseEstimator as NNShaders).predict([videoDataFloat32Array]);
+      (myPoseEstimator as Wedge).predict([videoDataFloat32Array]);
 
-      // console.log("NNShaders runtime bruh")
+      // console.log("Wedge runtime bruh")
     } else {
       // mediapipe runtime:
       // FIXME: TODO: The timestamp should be the frame's timestamp, not the current time.

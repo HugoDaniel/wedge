@@ -4,7 +4,7 @@ import { createWebGLContext } from "@/lib/tests/testHelpers";
 import { createOutputTextureArray } from "@/lib/wedge/buffersAndTextures";
 import { defaultOptions } from "@/lib/wedge/constants";
 import { updateConv2DOutputDimensions } from "@/lib/wedge/ops/conv2D/output";
-import { NNShadersOptions } from "@/lib/wedge/types";
+import { WedgeOptions } from "@/lib/wedge/types";
 import { Test, TestContainer, expect } from "react-browser-tests";
 
 export default function TestPage() {
@@ -31,7 +31,7 @@ export default function TestPage() {
     <Test title="Simple test breakpoint test - 2 render targets" fn={() => {
       const gl = createWebGLContext();
       const originalOutputShape = [100, 100, 3];
-      const renderTargetBreakpoints: NNShadersOptions["renderTargetBreakpoints"] = [
+      const renderTargetBreakpoints: WedgeOptions["renderTargetBreakpoints"] = [
         { outputTextureElementCount: 1000, numberOfRenderTargets: 1 },
         { outputTextureElementCount: 10000, numberOfRenderTargets: 2 },
       ]
@@ -61,7 +61,7 @@ export default function TestPage() {
       const gl = createWebGLContext();
       const numFilters = 5;
       const originalOutputShape = [6, 6, numFilters];
-      const renderTargetBreakpoints: NNShadersOptions["renderTargetBreakpoints"] = [
+      const renderTargetBreakpoints: WedgeOptions["renderTargetBreakpoints"] = [
         { outputTextureElementCount: 10, numberOfRenderTargets: 1 },
         { outputTextureElementCount: 100, numberOfRenderTargets: 2 }, // reduce the size value for this breakpoint.
       ]
@@ -89,7 +89,7 @@ export default function TestPage() {
       const gl = createWebGLContext();
       const numFilters = 5;
       const originalOutputShape = [100, 100, numFilters];
-      const renderTargetBreakpoints: NNShadersOptions["renderTargetBreakpoints"] = [
+      const renderTargetBreakpoints: WedgeOptions["renderTargetBreakpoints"] = [
         { outputTextureElementCount: 10, numberOfRenderTargets: 1 },
         { outputTextureElementCount: 10000, numberOfRenderTargets: 3 }, // reduce the size value for this breakpoint.
       ]

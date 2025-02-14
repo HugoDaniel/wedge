@@ -1,6 +1,6 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { createOutputTextureArray } from "../../buffersAndTextures";
-import { NNShadersOptions, NodeWebGLDataMap, WebGLData, WebGLDataTextureArray, WebGLOpNodeMap } from "../../types";
+import { NodeWebGLDataMap, WebGLData, WebGLDataTextureArray, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLOpOutputOriginalShape } from "../../webGLData";
 
 export function getArithmeticOutput(
@@ -9,7 +9,7 @@ export function getArithmeticOutput(
   node: Node,
   nodeWebGLDataMap: NodeWebGLDataMap,
   opNodeMap: WebGLOpNodeMap,
-  options: NNShadersOptions): WebGLDataTextureArray | null {
+  options: WedgeOptions): WebGLDataTextureArray | null {
 
   if (node.inputs.length !== 2 || inputs.length !== 2) {
     throw new Error("Expected 2 inputs for Mul or AddV2");

@@ -1,6 +1,6 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { createOutputTextureArray } from "../../buffersAndTextures";
-import { NNShadersOptions, NodeWebGLDataMap, OpName, WebGLDataTextureArray, WebGLOpNodeMap } from "../../types";
+import { NodeWebGLDataMap, OpName, WebGLDataTextureArray, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull, getWebGLOpOutputOriginalShape } from "../../webGLData";
 
 export function getSingleInputBasicOutput(
@@ -9,7 +9,7 @@ export function getSingleInputBasicOutput(
   nodeWebGLDataMap: NodeWebGLDataMap,
   opNodeMap: WebGLOpNodeMap,
   opName: OpName,
-  options: NNShadersOptions): WebGLDataTextureArray | null {
+  options: WedgeOptions): WebGLDataTextureArray | null {
   const inputData = getWebGLDataElseNull(node.inputs[0], nodeWebGLDataMap, opNodeMap);
 
   if (inputData === null) {

@@ -3,7 +3,7 @@ import { WebGLCanvas } from "@/components/Canvas3d";
 import { CameraCanvas } from "@/components/CanvasCamera";
 import { Loading } from "@/components/Loading";
 import { WebGLNotSupported } from "@/components/WebGLErrors";
-import { useModelWithCamera } from "@/lib/nnshaders/hooks/useTensorFlowModel";
+import { useModelWithCamera } from "@/lib/wedge/hooks/useTensorFlowModel";
 import { useGetMediaStream } from "@/lib/wedge/hooks/useGetMediaStream";
 import { useGlobalState } from "@/lib/wedge/hooks/useGlobalState";
 import { useSetupVideoStreamAndPlay } from "@/lib/wedge/hooks/useSetupVideoStreamAndPlay";

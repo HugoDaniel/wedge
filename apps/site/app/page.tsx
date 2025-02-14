@@ -6,7 +6,7 @@ import { useLoadModel } from "@/lib/wedge/hooks/useLoadModel";
 
 export default function Home() {
   const modelConfig: ModelConfig = {
-    runtime: "nnshaders",
+    runtime: "wedge",
     backend: "webgl",
     url: "/models/pose_four/model.json"
   };

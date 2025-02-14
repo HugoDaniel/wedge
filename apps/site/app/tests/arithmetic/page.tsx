@@ -2,14 +2,14 @@
 
 import { compareTensors } from "@/lib/tests/testHelpers";
 import { defaultOptions } from "@/lib/wedge/constants";
-import { createNNShaders } from "@/lib/wedge/create";
+import { createWedge } from "@/lib/wedge/create";
 import { padChannels } from "@/lib/wedge/transforms";
-import { NNShadersOptions } from "@/lib/wedge/types";
+import { WedgeOptions } from "@/lib/wedge/types";
 import * as tf from '@tensorflow/tfjs';
 import { expect } from "chai";
 import { Test, TestContainer } from "react-browser-tests";
 
-const defaultOptionsWithoutBatchDim: NNShadersOptions = {
+const defaultOptionsWithoutBatchDim: WedgeOptions = {
   ...defaultOptions,
   hasBatchDimension: false
 }
@@ -37,7 +37,7 @@ export default function TestPage() {
       // Get prediction from TensorFlow.js model
       const tfjsPrediction = model.predict([onesData, onesData]) as tf.Tensor;
 
-      const nns = await createNNShaders(model, defaultOptionsWithoutBatchDim);
+      const nns = await createWedge(model, defaultOptionsWithoutBatchDim);
       const nnsPrediction = nns.predict([onesDataPaddedArray, onesDataPaddedArray]);
       const nnsPredictionTensor = tf.tensor(nnsPrediction, nns.finalOutputData!.originalShape);
 
@@ -79,7 +79,7 @@ export default function TestPage() {
 
       // console.log("tfjsPrediction", tfjsPrediction.dataSync());
 
-      const nns = await createNNShaders(model, defaultOptionsWithoutBatchDim);
+      const nns = await createWedge(model, defaultOptionsWithoutBatchDim);
 
       const nnsPrediction = nns.predict([onesDataPaddedArray, new Float32Array(scalarConstant)]);
       const nnsPredictionTensor = tf.tensor(nnsPrediction, nns.finalOutputData!.originalShape);

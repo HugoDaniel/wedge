@@ -1,7 +1,7 @@
 "use client"
 
 import { compareTensors, createSequentialTensor } from "@/lib/tests/testHelpers";
-import { createNNShaders } from "@/lib/wedge/create";
+import { createWedge } from "@/lib/wedge/create";
 import * as tf from '@tensorflow/tfjs';
 import { expect } from "chai";
 import { Test, TestContainer } from "react-browser-tests";
@@ -27,7 +27,7 @@ export default function TestPage() {
 
       const model: tf.LayersModel = tf.model({ inputs: sequentialInput, outputs: result });
 
-      const nns = await createNNShaders(model);
+      const nns = await createWedge(model);
 
       const unsqueezedSequentialData = tf.expandDims(sequentialData, 0);
       const tfjsPrediction = model.predict(unsqueezedSequentialData) as tf.Tensor;

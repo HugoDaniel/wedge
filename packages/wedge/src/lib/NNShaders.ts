@@ -6,7 +6,7 @@ import { defaultOptions } from './constants';
 import { createDummyInputsNamedTensorMap, createOpNodeMapPrograms, graphModelExecuteSetup, processLayersModel } from './modelHelpers';
 import { initWebGL } from './setupShadersAndWebGL';
 import { removePadChannels } from './transforms';
-import { NNShadersOptions, NodeWebGLDataMap, WebGLDataTextureArray, WebGLOpNodeMap, WebGLOpNodeWithProgramMap } from './types';
+import { NodeWebGLDataMap, WebGLDataTextureArray, WebGLOpNodeMap, WebGLOpNodeWithProgramMap, WedgeOptions } from './types';
 import { initWebGLData, updateUniformsForProgram } from './webGLData';
 
 /*
@@ -18,7 +18,7 @@ https://github.com/tensorflow/tfjs/blob/f0f981fe306bf548e300536aca485c0ffdd6619e
 */
 
 
-export class NNShaders {
+export class Wedge {
   public graphModel: tf.GraphModel | null = null;
   public canvas: OffscreenCanvas | HTMLCanvasElement | null = null;
   public executor: any = null;
@@ -40,7 +40,7 @@ export class NNShaders {
   public layersModel: tf.LayersModel | null = null;
 
   constructor(
-    public options: NNShadersOptions = defaultOptions,
+    public options: WedgeOptions = defaultOptions,
   ) {
     // 1st step - create offscreen canvas.
     const { canvas, gl, maxColorAttachments } = initWebGL(

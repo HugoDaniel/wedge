@@ -9,7 +9,7 @@ import { initNotSupportedOpWebGLData } from "./ops/nonSupported/init";
 import { initReluWebGLData } from "./ops/relu/init";
 import { initResizeBilinearWebGLData } from "./ops/ResizeBilinear/init";
 import { padChannels } from "./transforms";
-import { ModelType, NNShadersOptions, NodeWebGLDataMap, OpName, WebGLData, WebGLDataNonTexture, WebGLOpNode, WebGLOpNodeMap, WebGLOpNodeWithProgram } from "./types";
+import { ModelType, NodeWebGLDataMap, OpName, WebGLData, WebGLDataNonTexture, WebGLOpNode, WebGLOpNodeMap, WebGLOpNodeWithProgram, WedgeOptions } from "./types";
 /*
 
 AddV2 case:
@@ -30,7 +30,7 @@ export function getNonOpWebGLData(
   gl: WebGL2RenderingContext,
   weightMap: NamedTensorsMap,
   node: Node,
-  options: NNShadersOptions,
+  options: WedgeOptions,
 ): WebGLData {
   let weightMapTensor = getFromWeightMap(weightMap, node.name);
   let originalShape = weightMapTensor.shape;
@@ -105,7 +105,7 @@ export function initWebGLData(
   weightMap: NamedTensorsMap,
   orderedNodes: Node[],
   modelType: ModelType,
-  options: NNShadersOptions): InitWebGLDataReturn {
+  options: WedgeOptions): InitWebGLDataReturn {
   const opNodeMap: WebGLOpNodeMap = new Map<string, WebGLOpNode>();
   const nodeWebGLDataMap: NodeWebGLDataMap = new Map<string, WebGLData>();
 
@@ -190,7 +190,7 @@ export function updateUniformsForProgram(
   opNodeWithProgram: WebGLOpNodeWithProgram,
   inputTensorNames: Set<string>,
   inputRawData: ArrayBufferView[],
-  options: NNShadersOptions) {
+  options: WedgeOptions) {
   const programInfo = opNodeWithProgram.programInfo;
   let textureUnitIndex = 0; // Start from texture unit 0
 

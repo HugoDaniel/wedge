@@ -1,6 +1,6 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { opNodeHasMissingData } from "../../helpers";
-import { NNShadersOptions, NodeWebGLDataMap, SingleInputBasicOpName, WebGLOpNode, WebGLOpNodeMap } from "../../types";
+import { NodeWebGLDataMap, SingleInputBasicOpName, WebGLOpNode, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull } from "../../webGLData";
 import { getSingleInputBasicOutput } from "./output";
 import { singleInputBasicWebGLShader } from "./webGLShader";
@@ -11,7 +11,7 @@ export function initSingleInputBasicWebGLData(
   nodeWebGLDataMap: NodeWebGLDataMap,
   opNodeMap: WebGLOpNodeMap,
   opName: SingleInputBasicOpName,
-  options: NNShadersOptions
+  options: WedgeOptions
 ): WebGLOpNode {
   if (node.inputs.length !== 1) {
     throw new Error(`Node ${node.name} has ${node.inputs.length} inputs, expected 1`);

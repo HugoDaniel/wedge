@@ -1,6 +1,6 @@
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { opNodeHasMissingData } from "../../helpers";
-import { ArithmeticOpName, NNShadersOptions, NodeWebGLDataMap, WebGLOpNode, WebGLOpNodeMap } from "../../types";
+import { ArithmeticOpName, NodeWebGLDataMap, WebGLOpNode, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull } from "../../webGLData";
 import { getArithmeticOutput } from "./output";
 import { arithmeticWebGLShader } from "./webGLShader";
@@ -11,7 +11,7 @@ export function initArithmeticWebGLData(
   nodeWebGLDataMap: NodeWebGLDataMap,
   opNodeMap: WebGLOpNodeMap,
   opName: ArithmeticOpName,
-  options: NNShadersOptions
+  options: WedgeOptions
 ): WebGLOpNode {
 
   const input1 = getWebGLDataElseNull(node.inputs[0], nodeWebGLDataMap, opNodeMap);

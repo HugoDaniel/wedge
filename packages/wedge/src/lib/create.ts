@@ -1,12 +1,12 @@
 import * as tf from '@tensorflow/tfjs';
-import { NNShaders } from './NNShaders';
+import { Wedge } from './Wedge';
 import { defaultOptions } from './constants';
-import { ModelType, NNShadersOptions } from './types';
+import { ModelType, WedgeOptions } from './types';
 
 export async function createFromPath(
   modelPath: string,
   modelType: ModelType = "GraphModel",
-  nns: NNShaders): Promise<void> {
+  nns: Wedge): Promise<void> {
   // Load the model.
   if (modelType === "GraphModel") {
     nns.graphModel = await tf.loadGraphModel(modelPath);
@@ -21,10 +21,10 @@ export async function createFromPath(
   }
 }
 
-export async function createNNShaders(
+export async function createWedge(
   graphModelPathOrLayersModel: string | tf.LayersModel,
-  options: NNShadersOptions = defaultOptions): Promise<NNShaders> {
-  const nns = new NNShaders(options);
+  options: WedgeOptions = defaultOptions): Promise<Wedge> {
+  const nns = new Wedge(options);
 
   if (typeof graphModelPathOrLayersModel === "string") {
     await createFromPath(graphModelPathOrLayersModel, "GraphModel", nns)

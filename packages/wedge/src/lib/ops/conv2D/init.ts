@@ -3,7 +3,7 @@ import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { createOutputTextureArray, createWeightDataTextureArray } from "../../buffersAndTextures";
 import { checkConv2DInputs, getConv2DParams, isWebGLDataNonTexture, opNodeHasMissingData } from "../../helpers";
 import { biasWeightsTransform, conv2dWeightsTransform } from '../../transforms';
-import { ModelType, NNShadersOptions, NodeWebGLDataMap, WebGLData, WebGLOpNode, WebGLOpNodeMap } from "../../types";
+import { ModelType, NodeWebGLDataMap, WebGLData, WebGLOpNode, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull } from "../../webGLData";
 import { getConv2DOutputShape, updateConv2DOutputDimensions } from "./output";
 import { conv2DWebGLShader } from "./webGLShader";
@@ -45,7 +45,7 @@ export function initConv2DWebGLData(
   opNodeMap: WebGLOpNodeMap,
   weightMap: NamedTensorsMap,
   modelType: ModelType,
-  options: NNShadersOptions
+  options: WedgeOptions
 ): WebGLOpNode {
   checkConv2DInputs(node.inputs);
 

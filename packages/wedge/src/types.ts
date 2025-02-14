@@ -1,5 +1,5 @@
 import { GraphModel } from "@tensorflow/tfjs-converter";
-import { NNShaders } from "./wedge/NNShaders";
+import { Wedge } from "./wedge/Wedge";
 
 export type Vector3String = {
   x: string;
@@ -9,7 +9,7 @@ export type Vector3String = {
 
 export type ModelConfig = {
   backend: "webgl";
-  runtime: "tfjs" | "mediapipe" | "tfjs-tflite" | "nnshaders";
+  runtime: "tfjs" | "mediapipe" | "tfjs-tflite" | "wedge";
   url: string;
 }
 
@@ -23,4 +23,4 @@ export type GlobalState = {
 }
 
 
-export type Model = NNShaders | GraphModel;
+export type Model = Wedge | GraphModel;

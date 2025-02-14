@@ -1,6 +1,6 @@
 import { Model } from "@/lib/types";
-import { NNShaders } from "@/lib/wedge/NNShaders";
-import { NNShadersOptions, WebGLOpNode } from "@/lib/wedge/types";
+import { Wedge } from "@/lib/wedge/Wedge";
+import { WebGLOpNode, WedgeOptions } from "@/lib/wedge/types";
 import { FC } from "react";
 
 
@@ -12,13 +12,13 @@ type ViewOpNodeProps = {
 
 type ModelStatsProps = {
   model: Model;
-  nnShadersOptions?: NNShadersOptions;
+  nnShadersOptions?: WedgeOptions;
 }
 
 export const ModelStats: FC<ModelStatsProps> = ({
   model,
   nnShadersOptions }) => {
-  const opNodesIterableIterator = (model as NNShaders).opNodeMap.values();
+  const opNodesIterableIterator = (model as Wedge).opNodeMap.values();
   const opNodes = Array.from(opNodesIterableIterator);
   const numberOfOpNodes = opNodes.length
 

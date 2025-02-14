@@ -15,7 +15,7 @@ import * as tf from '@tensorflow/tfjs';
 // import "@tensorflow/tfjs-core"
 
 import { getModelType } from './helpers';
-import { createNNShaders } from './wedge/create';
+import { createWedge } from './wedge/create';
 import { ModelType } from './wedge/types';
 
 //
@@ -63,11 +63,11 @@ export async function loadModel(
     });
 
     return imageClassifier;
-  } else if (runtime === "nnshaders") {
-    // const nns = new NNShaders("3_convs_no_rescaling/model.json");
-    // const nns = new NNShaders("10_convs/model.json");
-    // const nns = new NNShaders("6_convs_with_relu_and_bias/model.json")
-    // const nns = new NNShaders("3_convs_1st_layer_with_40_filters/model.json")
+  } else if (runtime === "wedge") {
+    // const nns = new Wedge("3_convs_no_rescaling/model.json");
+    // const nns = new Wedge("10_convs/model.json");
+    // const nns = new Wedge("6_convs_with_relu_and_bias/model.json")
+    // const nns = new Wedge("3_convs_1st_layer_with_40_filters/model.json")
 
     const modelType = getModelType(modelConfig);
 
@@ -76,11 +76,11 @@ export async function loadModel(
     }
 
     // const layersModel = createAllConvModel(3);
-    // const nns = new NNShaders(layersModel);
+    // const nns = new Wedge(layersModel);
 
-    // const nns = await createNNShaders(url);
+    // const nns = await createWedge(url);
 
-    const nns = await createNNShaders("models/pose_four/model.json")
+    const nns = await createWedge("models/pose_four/model.json")
     nns.initializeGraphModel();
 
     return nns;

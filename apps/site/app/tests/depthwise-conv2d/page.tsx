@@ -3,14 +3,14 @@
 import { compareTensors, createSequentialTensor } from "@/lib/tests/testHelpers";
 import { convertShapeToTexture2DShape } from "@/lib/wedge/buffersAndTextures";
 import { defaultOptions } from "@/lib/wedge/constants";
-import { createNNShaders } from "@/lib/wedge/create";
+import { createWedge } from "@/lib/wedge/create";
 import { padChannels } from "@/lib/wedge/transforms";
-import { NNShadersOptions } from "@/lib/wedge/types";
+import { WedgeOptions } from "@/lib/wedge/types";
 import * as tf from '@tensorflow/tfjs';
 import { expect } from "chai";
 import { Test, TestContainer } from "react-browser-tests";
 
-const defaultOptionsWithoutBatchDim: NNShadersOptions = {
+const defaultOptionsWithoutBatchDim: WedgeOptions = {
   ...defaultOptions,
   hasBatchDimension: false
 }
@@ -31,7 +31,7 @@ async function predictAndCompare(
   inputDimension: number,
   inputDepth: number,
   numConvLayers: number = 1,
-  nnShadersOptions?: NNShadersOptions) {
+  nnShadersOptions?: WedgeOptions) {
 
   let result = tf.layers.depthwiseConv2d(depthwiseConvLayerArgs).apply(input) as tf.SymbolicTensor;
 
@@ -42,7 +42,7 @@ async function predictAndCompare(
   // result = tf.layers.conv2d(convLayerArgs).apply(result) as tf.SymbolicTensor;
   const model: tf.LayersModel = tf.model({ inputs: input, outputs: result });
 
-  const nns = await createNNShaders(model, nnShadersOptions || defaultOptionsWithoutBatchDim);
+  const nns = await createWedge(model, nnShadersOptions || defaultOptionsWithoutBatchDim);
 
   // const inputTensor = createSequentialTensor([1, inputDimension, inputDimension, inputDepth]);
   const inputTensor = tf.ones([1, inputDimension, inputDimension, inputDepth]);
@@ -72,7 +72,7 @@ type DepthwiseConvLayerTestArgs = {
   useInitializers: boolean,
   numConvLayers?: number,
   strides?: number,
-  nnShadersOptions?: NNShadersOptions
+  nnShadersOptions?: WedgeOptions
 }
 
 async function createDepthwiseConvLayerTest({

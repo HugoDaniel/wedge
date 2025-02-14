@@ -17,7 +17,7 @@ export const useGlobalState = (): [
     show2DCanvas: true,
     poseEstimatorConfig: {
       backend: "webgl",
-      runtime: "nnshaders",
+      runtime: "wedge",
       // runtime: "mediapipe"
     },
     targetFPS: 120,

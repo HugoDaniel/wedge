@@ -29,7 +29,7 @@ export type InputShape = number[];
 
 export type ModelType = "GraphModel" | "LayersModel" | "onnx" | "tflite";
 
-export type NNShadersOptions = {
+export type WedgeOptions = {
   // XXX: NOTE: these width and height values may not be necessary? As we're drawing to a texture, not the canvas.
   canvasWidth: number;
   canvasHeight: number;

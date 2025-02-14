@@ -4,7 +4,7 @@ import { Tensor } from "@tensorflow/tfjs-core";
 import { maxTextureDim } from "./constants";
 import { findRecommendedRenderTargets, isWebGLDataTextureArray } from "./helpers";
 import { getChannelPaddedShape } from "./transforms";
-import { CustomShapeUpdate, DataFormat, NNShadersOptions, ProgramInfo, WebGLDataTexture, WebGLDataTextureArray } from "./types";
+import { CustomShapeUpdate, DataFormat, ProgramInfo, WebGLDataTexture, WebGLDataTextureArray, WedgeOptions } from "./types";
 
 export function initVertexShaderBuffer(gl: WebGL2RenderingContext): WebGLBuffer {
   // Create a buffer for the square's positions.
@@ -402,7 +402,7 @@ export function handleTextureUniforms(
 export function createOutputTextureArray(
   gl: WebGL2RenderingContext,
   originalShape: number[] | null | undefined,
-  options: NNShadersOptions,
+  options: WedgeOptions,
   nodeName: string,
   customShapeUpdate?: CustomShapeUpdate): WebGLDataTextureArray | null {
   if (!originalShape || !originalShape.length) {

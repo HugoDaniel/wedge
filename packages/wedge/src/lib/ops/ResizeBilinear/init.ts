@@ -2,7 +2,7 @@ import { NamedTensorsMap } from "@tensorflow/tfjs-converter/dist/data/types";
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { createOutputTextureArray } from "../../buffersAndTextures";
 import { opNodeHasMissingData } from "../../helpers";
-import { ModelType, NNShadersOptions, NodeWebGLDataMap, WebGLOpNode, WebGLOpNodeMap } from "../../types";
+import { ModelType, NodeWebGLDataMap, WebGLOpNode, WebGLOpNodeMap, WedgeOptions } from "../../types";
 import { getWebGLDataElseNull } from "../../webGLData";
 import { getResizeBilinearOriginalInputShape, getResizeBilinearParams } from "./helpers";
 import { getResizeBilinearOutputShape } from "./output";
@@ -15,7 +15,7 @@ export function initResizeBilinearWebGLData(
   opNodeMap: WebGLOpNodeMap,
   weightMap: NamedTensorsMap,
   modelType: ModelType,
-  options: NNShadersOptions
+  options: WedgeOptions
 ): WebGLOpNode {
   const input = getWebGLDataElseNull(node.inputs[0], nodeWebGLDataMap, opNodeMap);
   const originalInputShape = getResizeBilinearOriginalInputShape(node, input, nodeWebGLDataMap, opNodeMap, weightMap);

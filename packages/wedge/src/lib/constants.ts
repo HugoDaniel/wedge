@@ -1,9 +1,9 @@
-import { NNShadersOptions } from "./types";
+import { WedgeOptions } from "./types";
 
 export const shapeUniformName = "uShape";
 export const squareShhapeUniformName = "uSquareShape";
 
-export const defaultOptions: NNShadersOptions = {
+export const defaultOptions: WedgeOptions = {
   // XXX: NOTE: these width and height values may not be necessary? As we're drawing to a texture, not the canvas.
   canvasWidth: 256,
   canvasHeight: 256,

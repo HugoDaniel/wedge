@@ -1,7 +1,7 @@
 import { Model } from "@/lib/types";
-import { NNShaders } from "@/lib/wedge/NNShaders";
+import { Wedge } from "@/lib/wedge/Wedge";
 import { opNodeHasMissingData } from "@/lib/wedge/helpers";
-import { NNShadersOptions, WebGLOpNode } from "@/lib/wedge/types";
+import { WebGLOpNode, WedgeOptions } from "@/lib/wedge/types";
 import { FC, useState } from "react";
 import { ModelStats } from "../stats/ModelVisualize";
 import { OpNodeSidebar } from "./OpNodeSidebar";
@@ -55,7 +55,7 @@ const ViewOpNode: FC<ViewOpNodeProps> = ({ opNode, isActive, onClick }) => {
 
 type ModelVisualizeProps = {
   model: Model;
-  nnShadersOptions?: NNShadersOptions;
+  nnShadersOptions?: WedgeOptions;
 }
 
 export const ModelVisualize: FC<ModelVisualizeProps> = ({
@@ -75,7 +75,7 @@ export const ModelVisualize: FC<ModelVisualizeProps> = ({
     setSelectedOpNode(null);
   };
 
-  const opNodesIterableIterator = (model as NNShaders).opNodeMap.values();
+  const opNodesIterableIterator = (model as Wedge).opNodeMap.values();
   const opNodes = Array.from(opNodesIterableIterator);
   const hasSidebarClassName = selectedOpNode ? "model-visualizer-container-with-sidebar" : "";
 

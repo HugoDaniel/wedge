@@ -1,6 +1,6 @@
 import { NamedTensorsMap } from "@tensorflow/tfjs-converter/dist/data/types";
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
-import { ModelType, NNShadersOptions } from "../../types";
+import { ModelType, WedgeOptions } from "../../types";
 import { getConv2DOutputShape } from "../conv2D/output";
 
 export function getDepthwiseConv2DOutputShape(
@@ -9,7 +9,7 @@ export function getDepthwiseConv2DOutputShape(
   node: Node,
   weightMap: NamedTensorsMap,
   modelType: ModelType,
-  options: NNShadersOptions): number[] | null {
+  options: WedgeOptions): number[] | null {
   const conv2DOutputShape = getConv2DOutputShape(gl, inputOriginalShape, node, weightMap, modelType, options);
 
   if (conv2DOutputShape === null || inputOriginalShape === null) {
