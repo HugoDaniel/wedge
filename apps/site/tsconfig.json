@@ -31,7 +31,9 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../packages/core/tests/layout.tsx",
+    "../../packages/core/tests/page.tsx"
   ],
   "exclude": [
     "node_modules"
