@@ -1,6 +1,4 @@
 
-import { WedgeBase } from '../../../types';
-import { ISignatureDef, ITFGraphDef } from '../compiled_api';
 import * as tensorflow from '../data/compiled_api';
 import { getNodeNameAndIndex } from '../executor_utils';
 
@@ -32,9 +30,9 @@ export function getRegisteredOp(name: string): OpMapper {
 }
 
 export class OperationMapper {
-  private static _instance: OperationMapper;
+  public static _instance: OperationMapper;
 
-  private opMappers: { [key: string]: OpMapper };
+  public opMappers: { [key: string]: OpMapper };
 
   // Singleton instance for the mapper
   public static get Instance() {
@@ -42,7 +40,7 @@ export class OperationMapper {
   }
 
   // Loads the op mapping from the JSON file.
-  private constructor() {
+  public constructor() {
     const ops = [
       arithmetic, basicMath, control, convolution, creation, dynamic,
       evaluation, graph, hashTable, image, logical, matrices, normalization,
@@ -60,106 +58,7 @@ export class OperationMapper {
 
   // Converts the model inference graph from Tensorflow GraphDef to local
   // representation for TensorFlow.js API
-  public tfGraphToWedgeGraph(
-    graph: ITFGraphDef,
-    wedgeInstance: WedgeBase,
-    signature: ISignatureDef = {},
-  ): Graph {
-    const tfNodes = graph.node;
-    const placeholders: Node[] = [];
-    const weights: Node[] = [];
-    const initNodes: Node[] = [];
-    const nodes = tfNodes.reduce<{ [key: string]: Node }>((map, node) => {
-      map[node.name] = this.mapNode(node);
-      if (node.op.startsWith('Placeholder')) {
-        placeholders.push(map[node.name]);
-      } else if (node.op === 'Const') {
-        weights.push(map[node.name]);
-      } else if (node.input == null || node.input.length === 0) {
-        initNodes.push(map[node.name]);
-      }
-      return map;
-    }, {});
-
-    let inputs: Node[] = [];
-    const outputs: Node[] = [];
-    let inputNodeNameToKey: { [key: string]: string } = {};
-    let outputNodeNameToKey: { [key: string]: string } = {};
-    if (signature != null) {
-      inputNodeNameToKey = this.mapSignatureEntries(signature.inputs);
-      outputNodeNameToKey = this.mapSignatureEntries(signature.outputs);
-    }
-    const allNodes = Object.keys(nodes);
-    allNodes.forEach(key => {
-      const node = nodes[key];
-      node.inputNames.forEach((name, index) => {
-        const [nodeName, , outputName] = getNodeNameAndIndex(name);
-        const inputNode = nodes[nodeName];
-        if (inputNode.outputs != null) {
-          const outputIndex = inputNode.outputs.indexOf(outputName);
-          if (outputIndex !== -1) {
-            const inputName = `${nodeName}:${outputIndex}`;
-            // update the input name to use the mapped output index directly.
-            node.inputNames[index] = inputName;
-          }
-        }
-        node.inputs.push(inputNode);
-        inputNode.children.push(node);
-      });
-    });
-
-    // if signature has not outputs set, add any node that does not have
-    // outputs.
-    if (Object.keys(outputNodeNameToKey).length === 0) {
-      allNodes.forEach(key => {
-        const node = nodes[key];
-        if (node.children.length === 0) {
-          outputs.push(node);
-        }
-      });
-    } else {
-      Object.keys(outputNodeNameToKey).forEach(name => {
-        const [nodeName,] = getNodeNameAndIndex(name);
-        const node = nodes[nodeName];
-        if (node != null) {
-          node.signatureKey = outputNodeNameToKey[name];
-          outputs.push(node);
-        }
-      });
-    }
-
-    if (Object.keys(inputNodeNameToKey).length > 0) {
-      Object.keys(inputNodeNameToKey).forEach(name => {
-        const [nodeName,] = getNodeNameAndIndex(name);
-        const node = nodes[nodeName];
-        if (node) {
-          node.signatureKey = inputNodeNameToKey[name];
-          inputs.push(node);
-        }
-      });
-    } else {
-      inputs = placeholders;
-    }
-
-    let functions = {};
-    if (graph.library != null && graph.library.function != null) {
-      functions = graph.library.function.reduce((functions, func) => {
-        functions[func.signature.name] = this.mapFunction(func);
-        return functions;
-      }, {} as { [key: string]: Graph });
-    }
-
-    const result: Graph =
-      { nodes, inputs, outputs, weights, placeholders, signature, functions };
-
-    if (initNodes.length > 0) {
-      result.initNodes = initNodes;
-    }
-
-    return result;
-  }
-
-  private mapSignatureEntries(entries: { [k: string]: tensorflow.ITensorInfo }) {
+  public mapSignatureEntries(entries: { [k: string]: tensorflow.ITensorInfo }) {
     return Object.keys(entries || {})
       .reduce<{ [key: string]: string }>((prev, curr) => {
         prev[entries[curr].name] = curr;
@@ -167,7 +66,7 @@ export class OperationMapper {
       }, {});
   }
 
-  private mapNode(node: tensorflow.INodeDef): Node {
+  public mapNode(node: tensorflow.INodeDef): Node {
     // Unsupported ops will cause an error at run-time (not parse time), since
     // they may not be used by the actual execution subgraph.
     const mapper =
@@ -327,7 +226,7 @@ export class OperationMapper {
   }
 
   // map the TFunctionDef to TFJS graph object
-  private mapFunction(functionDef: tensorflow.IFunctionDef): Graph {
+  public mapFunction(functionDef: tensorflow.IFunctionDef): Graph {
     const tfNodes = functionDef.nodeDef;
     const placeholders: Node[] = [];
     const weights: Node[] = [];
@@ -395,7 +294,7 @@ export class OperationMapper {
     return { nodes, inputs, outputs, weights, placeholders, signature };
   }
 
-  private mapArgsToSignature(functionDef: tensorflow.IFunctionDef):
+  public mapArgsToSignature(functionDef: tensorflow.IFunctionDef):
     tensorflow.ISignatureDef {
     return {
       methodName: functionDef.signature.name,
@@ -414,7 +313,7 @@ export class OperationMapper {
     };
   }
 
-  private mapArgToTensorInfo(
+  public mapArgToTensorInfo(
     arg: tensorflow.OpDef.IArgDef,
     nameMap?: { [key: string]: string }): tensorflow.ITensorInfo {
     let name = arg.name;

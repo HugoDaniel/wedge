@@ -135,9 +135,8 @@ export async function loadGraphModel(
   // this.executor =
   //   new GraphExecutor(OperationMapper.Instance.transformGraph(graph));
 
-  const wedgeGraph = OperationMapper.Instance.tfGraphToWedgeGraph(tfGraph, wedgeInstance);
+  const wedgeGraph = tfGraphToWedgeGraph(tfGraph, wedgeInstance);
   weightMap = convertTensorMapToTensorsMap(weightMap);
-
 
   // Get the executor (it's private but accessible)
   const executor = model["executor"];
