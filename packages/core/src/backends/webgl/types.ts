@@ -106,7 +106,7 @@ export type WebGLDataTextureArray = WebGLDataNodeTextureArray;
 
 export type ArithmeticOpName = "AddV2" | "Mul"
 
-export type SingleInputBasicOpName = "Relu"
+export type SingleInputBasicOpName = "Relu" | "Relu6" | "Sigmoid"
 
 export type PadOpName = "Pad" | "PadV2" | "MirrorPad"
 
@@ -121,6 +121,8 @@ export type OpName = ArithmeticOpName
   | "DepthwiseConv2dNative"
   | "FusedDepthwiseConv2dNative"
   | "ResizeBilinear"
+  | "Reshape"
+  | "MaxPool"
   | "NotSupported"
 
 export type GraphModelOpNames = OpName | "Placeholder" | "Const"
@@ -128,11 +130,13 @@ export type GraphModelOpNames = OpName | "Placeholder" | "Const"
 export type LayersModelLayerClass = "Conv2D"
   | "DenseLayer"
   | "InputLayer"
-  | "MaxPooling2DLayer"
+  | "MaxPooling2D"
   | "ReLU"
   | "DepthwiseConv2D"
   | "Add"
   | "ZeroPadding2D"
+  | "Reshape"
+  | "Activation"
 
 
 // Operation nodes have a corresponding WebGL program - with vertex and fragment shaders.
@@ -142,7 +146,7 @@ export type WebGLOpNode = {
   inputs: (WebGLData | null)[];
   output: WebGLDataNodeTextureArray | null;
   weights: WebGLDataNodeTextureArray[];
-  opParams: OpParams | PadParams | null;
+  opParams: OpParams | PadParams | ReshapeParams | MaxPoolParams | null;
   type: OpName;
   fsSource: string;
 };
@@ -191,6 +195,16 @@ export type ResizeBilinearParams = {
 export type PadParams = {
   paddings: number[][];  // [[before, after], ...] for each dimension
   constantValue: number;
+}
+
+export type ReshapeParams = {
+  newShape: number[];
+}
+
+export type MaxPoolParams = {
+  poolSize: number[];
+  strides: number[];
+  pad: "same" | "valid";
 }
 
 export type NodeWebGLDataMap = Map<string, WebGLData>;

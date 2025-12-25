@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { createAndBindFramebuffer } from './backends/webgl/buffersAndTextures';
+import { createAndBindFramebuffer, convertShapeToTexture2DShape } from './backends/webgl/buffersAndTextures';
 import { defaultOptions } from './constants';
 import { WedgeOptions, WebGLDataTextureArray } from './backends/webgl/types';
 import { initWebGL } from './backends/webgl/setupShadersAndWebGL';
@@ -8,7 +8,7 @@ import { updateFramebufferTextureLayer } from './backends/webgl/buffersAndTextur
 import { createOpNodeMapPrograms, createWeightName, mapLayerClassesToOpName } from './modelHelpers';
 import { Node } from '@tensorflow/tfjs-converter/dist/operations/types';
 import { NamedTensorsMap, NamedTensorMap } from '@tensorflow/tfjs-converter/dist/data/types';
-import { removePadChannels } from './transforms';
+import { removePadChannels, padChannels } from './transforms';
 
 export interface WedgeInstance {
   predict(inputs: ArrayBufferView[]): Float32Array;
@@ -260,4 +260,223 @@ export async function createWedge(
       return finalOutputData;
     }
   };
+}
+
+/**
+ * Get topologically ordered nodes from a GraphModel's executor graph.
+ * Filters out Identity nodes and returns only operation nodes.
+ */
+function getOrderedNodesFromGraph(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  graph: any,
+  outputNodeNames: string[]
+): Node[] {
+  const nodes = graph.nodes as Record<string, Node>;
+  const visited = new Set<string>();
+  const orderedNodes: Node[] = [];
+
+  // Depth-first traversal to get topological order
+  function visit(nodeName: string) {
+    if (visited.has(nodeName)) return;
+    visited.add(nodeName);
+
+    const node = nodes[nodeName];
+    if (!node) return;
+
+    // Visit all inputs first (dependencies)
+    for (const input of node.inputs || []) {
+      visit(input.name);
+    }
+
+    orderedNodes.push(node);
+  }
+
+  // Start from output nodes and traverse backwards
+  for (const outputName of outputNodeNames) {
+    visit(outputName);
+  }
+
+  // Filter out Identity nodes - they just pass through data
+  return orderedNodes.filter(node => node.op !== 'Identity');
+}
+
+/**
+ * Create a Wedge instance from a TensorFlow.js GraphModel URL.
+ * This is for running inference on models saved in TF.js graph format.
+ */
+export async function createWedgeFromGraphModel(
+  modelUrl: string,
+  options: WedgeOptions = defaultOptions
+): Promise<WedgeInstance> {
+  // Load the GraphModel
+  const graphModel = await tf.loadGraphModel(modelUrl);
+
+  // Access internal executor (private but accessible via indexing)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const executor = (graphModel as any).executor;
+  if (!executor) {
+    throw new Error('Could not access GraphModel executor');
+  }
+
+  // Get weight map from executor
+  const weightMap: NamedTensorsMap = executor.weightMap;
+
+  // Get the graph and output node names
+  const graph = executor.graph;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const outputNodes = graphModel.outputs.map((output: any) => {
+    // Output names may have :0 suffix, strip it for node lookup
+    const name = output.name.split(':')[0];
+    return name;
+  });
+
+  // Get input tensor names from the model
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const inputNames: string[] = graphModel.inputs.map((input: any) => {
+    return input.name.split(':')[0];
+  });
+
+  // Get ordered nodes through topological sort
+  const orderedNodes = getOrderedNodesFromGraph(graph, outputNodes);
+
+  // Create dummy input tensors for initialization
+  // We need to add placeholder tensors to the weight map for inputs
+  for (const inputName of inputNames) {
+    const inputNode = graph.nodes[inputName];
+    if (inputNode && !weightMap[inputName]) {
+      // Get the input shape from the node's attrParams
+      let inputShape = inputNode.attrParams?.shape?.value || [1, 256, 256, 3];
+      // Replace -1 or null with 1 for batch dimension
+      inputShape = inputShape.map((dim: number | null) => dim === -1 || dim === null ? 1 : dim);
+
+      // Create a dummy tensor - this will be replaced during inference
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let dummyTensor = (tf as any).zeros(inputShape);
+
+      // If no batch dimension expected, squeeze it
+      if (!options.hasBatchDimension && inputShape[0] === 1) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        dummyTensor = (tf as any).squeeze(dummyTensor, [0]);
+      }
+
+      weightMap[inputName] = [dummyTensor];
+    }
+  }
+
+  // Initialize WebGL context
+  const { canvas, gl, maxColorAttachments } = initWebGL(
+    options.canvasWidth,
+    options.canvasHeight,
+    options.viewportMaxSize
+  );
+
+  // Validate render target breakpoints
+  for (const breakpoint of options.renderTargetBreakpoints) {
+    if (breakpoint.numberOfRenderTargets > maxColorAttachments) {
+      throw new Error('numberOfRenderTargets exceeds maxColorAttachments');
+    }
+  }
+
+  const inputTensorNames = new Set(inputNames);
+
+  // Initialize WebGL data for all nodes
+  const { opNodeMap, nodeWebGLDataMap } = initWebGLData(
+    gl,
+    weightMap,
+    orderedNodes,
+    'GraphModel',
+    options
+  );
+
+  // Create WebGL programs
+  const opNodeWithProgramMap = createOpNodeMapPrograms(opNodeMap, gl, weightMap);
+
+  // Create and bind framebuffer
+  const frameBuffer = createAndBindFramebuffer(gl);
+
+  let finalOutputData: WebGLDataTextureArray | null = null;
+
+  // Run function
+  function run(inputRawData: ArrayBufferView[]): Float32Array {
+    let opNodesRan = 0;
+
+    opNodeWithProgramMap.forEach((opNodeWithProgram, opNodeName) => {
+      gl.useProgram(opNodeWithProgram.programInfo.program);
+      updateUniformsForProgram(gl, opNodeWithProgram, inputTensorNames, inputRawData, options);
+      updateFramebufferTextureLayer(gl, opNodeWithProgram.opNode.output!);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      finalOutputData = opNodeWithProgram.opNode.output;
+      opNodesRan++;
+    });
+
+    return readOutput();
+  }
+
+  // Read output function
+  function readOutput(): Float32Array {
+    if (!finalOutputData) {
+      throw new Error('finalOutputData is not defined');
+    }
+
+    const [outputTexturesWidth, outputTexturesHeight, numberOfTextures] = finalOutputData.RGBATextureShape;
+
+    if (!outputTexturesWidth || !outputTexturesHeight || !numberOfTextures) {
+      throw new Error('Output texture dimensions not defined');
+    }
+
+    const sizePerLayer = outputTexturesWidth * outputTexturesHeight * 4;
+    const output = new Float32Array(sizePerLayer * numberOfTextures);
+
+    for (let layer = 0; layer < numberOfTextures; layer++) {
+      gl.framebufferTextureLayer(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0 + layer,
+        finalOutputData.texture,
+        0,
+        layer
+      );
+      gl.readBuffer(gl.COLOR_ATTACHMENT0 + layer);
+
+      const layerData = new Float32Array(sizePerLayer);
+      gl.readPixels(0, 0, outputTexturesWidth, outputTexturesHeight, gl.RGBA, gl.FLOAT, layerData);
+      output.set(layerData, layer * sizePerLayer);
+    }
+
+    // Remove channel padding and return only original elements
+    return removePadChannels(output, finalOutputData.originalElementCount, finalOutputData.originalShape);
+  }
+
+  return {
+    predict: run,
+    get finalOutputData() {
+      return finalOutputData;
+    }
+  };
+}
+
+/**
+ * Prepare input data for Wedge inference from a Float32Array.
+ * This handles channel padding and texture layout conversion.
+ */
+export function prepareInputForWedge(
+  inputData: Float32Array,
+  inputShape: number[],
+  options: WedgeOptions = defaultOptions
+): Float32Array {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let inputTensor = (tf as any).tensor(inputData, inputShape);
+
+  // Pad channels if needed
+  if (options.transformations.padChannels) {
+    inputTensor = padChannels(inputTensor, 'input');
+  }
+
+  // Get texture dimensions
+  const [textWidth, textHeight] = convertShapeToTexture2DShape(inputTensor.shape, 'input');
+
+  // Create padded array for texture
+  const paddedInput = new Float32Array(textWidth * textHeight * 4);
+  paddedInput.set(inputTensor.dataSync(), 0);
+
+  return paddedInput;
 }

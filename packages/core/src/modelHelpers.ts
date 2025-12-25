@@ -24,7 +24,8 @@ export function createOpNodeMapPrograms(opNodeMap: Map<string, WebGLOpNode>, gl:
   return opNodeWithProgramMap;
 }
 
-export function mapLayerClassesToOpName(layerClassName: string): GraphModelOpNames {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mapLayerClassesToOpName(layerClassName: string, layerConfig?: any): GraphModelOpNames {
   switch (layerClassName as LayersModelLayerClass) {
     case "InputLayer":
       return "Const";
@@ -35,11 +36,29 @@ export function mapLayerClassesToOpName(layerClassName: string): GraphModelOpNam
     case "DepthwiseConv2D":
       return "DepthwiseConv2D";
     case "ReLU":
+      // Check if maxValue is 6, which indicates Relu6
+      if (layerConfig?.maxValue === 6) {
+        return "Relu6";
+      }
       return "Relu";
     case "Add":
       return "AddV2";
     case "ZeroPadding2D":
       return "Pad";
+    case "MaxPooling2D":
+      return "MaxPool";
+    case "Reshape":
+      return "Reshape";
+    case "Activation":
+      // Handle activation layers based on activation function
+      if (layerConfig?.activation === 'sigmoid') {
+        return "Sigmoid";
+      } else if (layerConfig?.activation === 'relu') {
+        return "Relu";
+      } else if (layerConfig?.activation === 'relu6') {
+        return "Relu6";
+      }
+      throw new Error("mapLayerClassesToOpName - activation not supported: " + layerConfig?.activation);
     default:
       throw new Error("mapLayerClassesToOpName - layerClassName not supported: " + layerClassName);
   }

@@ -20,12 +20,17 @@ const SUPPORTED_OPS = new Set([
   // Activations
   "Relu",
   "ReLU",
+  "Relu6",
+  "Sigmoid",
   // Padding
   "Pad",
   "PadV2",
   "MirrorPad",
+  // Pooling
+  "MaxPool",
   // Other
   "ResizeBilinear",
+  "Reshape",
   "Identity",
   // Data nodes (always supported)
   "Placeholder",
@@ -53,6 +58,12 @@ for (int ky = 0; ky < kernelY; ky++) {
   Relu: `// ReLU Fragment Shader
 vec4 inputVal = texelFetch(input, texelXYZ, 0);
 result = max(inputVal, vec4(0.0));`,
+  Relu6: `// ReLU6 Fragment Shader
+vec4 inputVal = texelFetch(input, texelXYZ, 0);
+result = clamp(inputVal, vec4(0.0), vec4(6.0));`,
+  Sigmoid: `// Sigmoid Fragment Shader
+vec4 inputVal = texelFetch(input, texelXYZ, 0);
+result = vec4(1.0) / (vec4(1.0) + exp(-inputVal));`,
   AddV2: `// Add Fragment Shader
 vec4 a = texelFetch(inputA, texelXYZ, 0);
 vec4 b = texelFetch(inputB, texelXYZ, 0);
@@ -77,6 +88,20 @@ if (inBounds) {
 } else {
   result = vec4(constantValue);
 }`,
+  MaxPool: `// MaxPool Fragment Shader
+float maxVal = -1.0e38;
+for (int ph = 0; ph < poolSize.x; ph++) {
+  for (int pw = 0; pw < poolSize.y; pw++) {
+    int inputH = outH * strides.x + ph;
+    int inputW = outW * strides.y + pw;
+    if (inputH >= 0 && inputH < inputDims.x &&
+        inputW >= 0 && inputW < inputDims.y) {
+      float val = texelFetch(input, inputXYZ, 0).r;
+      maxVal = max(maxVal, val);
+    }
+  }
+}
+result = vec4(maxVal);`,
 };
 
 type ModelNode = {

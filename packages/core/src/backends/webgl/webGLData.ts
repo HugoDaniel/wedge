@@ -12,6 +12,7 @@ import { initPadWebGLData } from "./ops/pad/init";
 import { initReluWebGLData } from "./ops/relu/init";
 import { initReshapeWebGLData } from "./ops/reshape/init";
 import { initResizeBilinearWebGLData } from "./ops/ResizeBilinear/init";
+import { initMaxPoolWebGLData } from "./ops/maxPool/init";
 /*
 
 AddV2 case:
@@ -148,6 +149,9 @@ export function initWebGLData(
       case "Relu6":
         opNode = initReluWebGLData(gl, node, nodeWebGLDataMap, opNodeMap, options, "Relu6");
         break;
+      case "Sigmoid":
+        opNode = initReluWebGLData(gl, node, nodeWebGLDataMap, opNodeMap, options, "Sigmoid");
+        break;
       case "DepthwiseConv2dNative":
       case "DepthwiseConv2D":
       case "FusedDepthwiseConv2dNative":
@@ -185,6 +189,14 @@ export function initWebGLData(
           nodeWebGLDataMap,
           opNodeMap,
           weightMap,
+          options);
+        break;
+      case "MaxPool":
+        opNode = initMaxPoolWebGLData(gl,
+          node,
+          nodeWebGLDataMap,
+          opNodeMap,
+          modelType,
           options);
         break;
       default:
