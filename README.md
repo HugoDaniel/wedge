@@ -4,7 +4,7 @@ Wedge is an alternative runtime for running and building machine learning models
 
 ## What This Project Currently Does
 
-Currently the main focus is compiling and executing TensorFlow.js models using custom GLSL shaders:
+The main focus at the moment is compiling and executing TensorFlow.js models using custom GLSL shaders. Currently, this project:
 
 1. **Loads** TensorFlow.js GraphModel or LayersModel formats
 2. **Compiles** them into an internal graph representation
