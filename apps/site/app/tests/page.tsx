@@ -1,7 +1,6 @@
 "use client";
 
-import { sidebarMenu } from "@/lib/tests/constants";
-import React from "react";
+import { sidebarMenu } from "@wedge/core/tests/constants";
 
 export default function TestPage() {
   const pagesWithoutHomes = Object.keys(sidebarMenu).filter((key) => key !== "/tests");
