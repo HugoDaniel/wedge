@@ -98,16 +98,23 @@ export type WebGLDataNodeTextureArray = WebGLDataNodeTextureBase & {
   webGLType: "sampler2DArray";
 };
 
-// export type WebGLDataNode = WebGLDataNodeNonTexture | WebGLDataNodeTexture | WebGLDataNodeTextureArray;
+// Union type for WebGL data nodes (defined early for use in WebGLOpNode)
+export type WebGLData = WebGLDataNodeNonTexture | WebGLDataNodeTexture | WebGLDataNodeTextureArray;
+export type WebGLDataNonTexture = WebGLDataNodeNonTexture;
+export type WebGLDataTexture = WebGLDataNodeTexture;
+export type WebGLDataTextureArray = WebGLDataNodeTextureArray;
 
 export type ArithmeticOpName = "AddV2" | "Mul"
 
 export type SingleInputBasicOpName = "Relu"
 
+export type PadOpName = "Pad" | "PadV2" | "MirrorPad"
+
 // Here I'm creating 2 types for op names, as I feel some of the graph model ops really shouldn't be called ops.
 // For example, Placeholder and Const. These are more like "data" nodes.
 export type OpName = ArithmeticOpName
   | SingleInputBasicOpName
+  | PadOpName
   | "Conv2D"
   | "_FusedConv2D"
   | "DepthwiseConv2D"
@@ -125,17 +132,17 @@ export type LayersModelLayerClass = "Conv2D"
   | "ReLU"
   | "DepthwiseConv2D"
   | "Add"
+  | "ZeroPadding2D"
 
 
 // Operation nodes have a corresponding WebGL program - with vertex and fragment shaders.
 export type WebGLOpNode = {
-  // node: Node;
-  name: string;
+  node: any; // Node type from @tensorflow/tfjs-converter
   // Operations have input(s) and output(s) - and possibly weight(s).
-  inputs: (TensorWebGL | null)[];
+  inputs: (WebGLData | null)[];
   output: WebGLDataNodeTextureArray | null;
   weights: WebGLDataNodeTextureArray[];
-  opParams: OpParams | null;
+  opParams: OpParams | PadParams | null;
   type: OpName;
   fsSource: string;
 };
@@ -158,4 +165,33 @@ export type WebGLOpInput = TensorWebGL | DataArray;
 export type WebGLOpOutput = TensorWebGL;
 
 export type WebGLOps = Ops<WebGLOpInput, WebGLOpOutput>
-export type GraphWebGL = Graph<TensorWebGL>;
+export type GraphWebGL = Graph;
+
+// Operation parameter types
+export type Conv2DParams = {
+  strides: number[];
+  pad: "same" | "valid";
+  kernelX: number;
+  kernelY: number;
+  kernelDepth: number;
+  numFilters: number;
+  activation: 'relu' | 'linear' | null;
+  hasBias: boolean;
+}
+
+export type DepthwiseConv2DParams = Conv2DParams;
+
+export type ResizeBilinearParams = {
+  alignCorners: boolean;
+  halfPixelCenters: boolean;
+  dtype: "float32" | "int32";
+  size: number;
+}
+
+export type PadParams = {
+  paddings: number[][];  // [[before, after], ...] for each dimension
+  constantValue: number;
+}
+
+export type NodeWebGLDataMap = Map<string, WebGLData>;
+export type WebGLOpNodeMap = Map<string, WebGLOpNode>;

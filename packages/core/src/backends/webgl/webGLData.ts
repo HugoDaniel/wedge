@@ -1,13 +1,14 @@
 import { NamedTensorsMap } from "@tensorflow/tfjs-converter/dist/data/types";
 import { Node } from "@tensorflow/tfjs-converter/dist/operations/types";
 import { padChannels } from "../../transforms";
-import { ModelType, NodeWebGLDataMap, OpName, WebGLData, WebGLDataNonTexture, WebGLOpNode, WebGLOpNodeMap, WebGLOpNodeWithProgram, WedgeOptions } from "../../types";
+import { ModelType, NodeWebGLDataMap, OpName, WebGLData, WebGLDataNonTexture, WebGLOpNode, WebGLOpNodeMap, WebGLOpNodeWithProgram, WedgeOptions } from "./types";
 import { convertShapeToTexture2DShape, createTextureArray, getElementCount, getFromWeightMap, handleTextureUniforms } from "./buffersAndTextures";
 import { isWebGLDataNonTexture, isWebGLDataTexture, isWebGLDataTextureArray } from "./helpers";
 import { initArithmeticWebGLData } from "./ops/arithmetic/init";
 import { initConv2DWebGLData } from "./ops/conv2D/init";
 import { initDepthwiseConv2DWebGLData } from "./ops/depthwiseConv2D/init";
 import { initNotSupportedOpWebGLData } from "./ops/nonSupported/init";
+import { initPadWebGLData } from "./ops/pad/init";
 import { initReluWebGLData } from "./ops/relu/init";
 import { initResizeBilinearWebGLData } from "./ops/ResizeBilinear/init";
 /*
@@ -156,6 +157,17 @@ export function initWebGLData(
         break;
       case "ResizeBilinear":
         opNode = initResizeBilinearWebGLData(gl,
+          node,
+          nodeWebGLDataMap,
+          opNodeMap,
+          weightMap,
+          modelType,
+          options);
+        break;
+      case "Pad":
+      case "PadV2":
+      case "MirrorPad":
+        opNode = initPadWebGLData(gl,
           node,
           nodeWebGLDataMap,
           opNodeMap,

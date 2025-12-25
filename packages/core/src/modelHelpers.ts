@@ -1,7 +1,8 @@
-
+import * as tf from '@tensorflow/tfjs';
+import { NamedTensorsMap } from "@tensorflow/tfjs-converter/dist/data/types";
 import { GraphModelOpNames, LayersModelLayerClass, WebGLOpNode, WebGLOpNodeWithProgram, WebGLOpNodeWithProgramMap } from "./backends/webgl/types";
-import { createWebGLProgram } from "./setupShadersAndWebGL";
-import { defaultVsSource } from "./shaderHelpers";
+import { createWebGLProgram } from "./backends/webgl/setupShadersAndWebGL";
+import { defaultVsSource } from "./backends/webgl/shaderHelpers";
 
 
 export function createOpNodeMapPrograms(opNodeMap: Map<string, WebGLOpNode>, gl: WebGL2RenderingContext, weightMap: NamedTensorsMap): WebGLOpNodeWithProgramMap {
@@ -37,6 +38,8 @@ export function mapLayerClassesToOpName(layerClassName: string): GraphModelOpNam
       return "Relu";
     case "Add":
       return "AddV2";
+    case "ZeroPadding2D":
+      return "Pad";
     default:
       throw new Error("mapLayerClassesToOpName - layerClassName not supported: " + layerClassName);
   }
