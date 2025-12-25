@@ -1,15 +1,23 @@
 # Wedge
 
-A WebGL-based neural network inference engine that compiles and executes TensorFlow.js models directly on the GPU using custom GLSL shaders.
+Wedge is an alternative runtime for running and building machine learning models in web browsers.
 
-## What This Project Does
+## What This Project Currently Does
 
-Wedge is an alternative runtime for running deep learning models in web browsers. Instead of using TensorFlow.js's built-in WebGL backend, it:
+Currently the main focus is compiling and executing TensorFlow.js models using custom GLSL shaders:
 
 1. **Loads** TensorFlow.js GraphModel or LayersModel formats
 2. **Compiles** them into an internal graph representation
 3. **Executes** operations via custom WebGL2 fragment shaders
 4. **Uses textures** for efficient GPU tensor storage and computation
+
+## Goals
+
+The main goals are:
+
+1. Be able to load other types of models - onnx, tflite, gguf and possibly more.
+2. Have a custom top level API for building / editing / debugging / machine learning graphs.
+3. Support for different backends. While the current focus is WebGL2, an Electron app that supports other backends (e.g. a C or C++ backend) is also planned.
 
 ## Project Structure
 
@@ -179,3 +187,4 @@ npm run -w packages/core lint
 ## Status
 
 Active development. WebGL backend is functional. WebGPU backend is planned but not yet implemented.
+
