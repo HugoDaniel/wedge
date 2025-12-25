@@ -65,7 +65,15 @@ Defined in `backends/webgl/types.ts`:
 - Conv2D, _FusedConv2D, DepthwiseConv2D variants
 - AddV2, Mul (arithmetic)
 - Relu (activation)
+- Pad, PadV2, MirrorPad (padding)
 - ResizeBilinear, Identity
+
+**When adding a new operation:**
+1. Add types to `backends/webgl/types.ts` (OpName union)
+2. Create op folder in `backends/webgl/ops/` with init.ts, output.ts, webGLShader.ts
+3. Register in `backends/webgl/webGLData.ts` switch statement
+4. Add to `SUPPORTED_OPS` in `apps/site/app/model/page.tsx` for visualization
+5. For LayersModel support, add mapping in `modelHelpers.ts` mapLayerClassesToOpName()
 
 ### Site App (`apps/site/`)
 
@@ -91,3 +99,32 @@ Site app tsconfig uses these path aliases:
 | `packages/core/src/graph/types.ts` | GraphNode, Graph interfaces |
 | `packages/core/src/backends/webgl/ops/conv2D/webGLShader.ts` | Example shader |
 | `apps/site/app/model/page.tsx` | Model visualization UI |
+
+## Shader Coordinate Conventions
+
+The codebase uses specific coordinate conventions that must be followed:
+
+### `convertFlatToHWC3D(flatIndex, width, height, depth)`
+- Returns `ivec3(x, y, z)` where for square dimensions: x=w, y=h, z=c
+- Called with `(outputDims.x, outputDims.y, paddedDepth)` where outputDims=(H, W, C)
+- The naming is confusing: "width" parameter is actually H, "height" is W
+
+### Flat Index Formula
+```glsl
+flatIndex = y * inputDims.x * paddedDepth + x * paddedDepth + z
+// Which translates to: h * H * paddedC + w * paddedC + c
+```
+
+### Important Implementation Notes
+
+**4D vs 3D shapes**: Input tensors from LayersModel are often 4D [N,H,W,C] even with `hasBatchDimension: false`. Shaders must detect and handle this:
+```typescript
+const inputIs4D = input.originalShape.length === 4;
+const inputH = inputIs4D ? input.originalShape[1] : input.originalShape[0];
+```
+
+**Channel padding**: Channels are padded to multiples of 4 for texture storage. Use `paddedInputDepth = ((inputDims.z + 3) / 4) * 4`.
+
+**Output reading**: The `removePadChannels()` function in `transforms.ts` handles both channel padding AND texture spatial padding when reading output.
+
+**LayersModel attributes**: In `create.ts`, `getAttrParams()` stores padding under key `'pad'` not `'padding'`. Check both when reading attributes.

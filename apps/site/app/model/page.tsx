@@ -20,6 +20,10 @@ const SUPPORTED_OPS = new Set([
   // Activations
   "Relu",
   "ReLU",
+  // Padding
+  "Pad",
+  "PadV2",
+  "MirrorPad",
   // Other
   "ResizeBilinear",
   "Identity",
@@ -64,6 +68,15 @@ vec4 tr = texelFetch(input, ivec3(ceil(srcCoord.x), floor(srcCoord.y), z), 0);
 vec4 bl = texelFetch(input, ivec3(floor(srcCoord.x), ceil(srcCoord.y), z), 0);
 vec4 br = texelFetch(input, ivec3(ceil(srcCoord), z), 0);
 result = mix(mix(tl, tr, fract(srcCoord.x)), mix(bl, br, fract(srcCoord.x)), fract(srcCoord.y));`,
+  Pad: `// Pad Fragment Shader
+ivec3 inputPos = outputPos - padBefore;
+bool inBounds = all(greaterThanEqual(inputPos, ivec3(0))) &&
+                all(lessThan(inputPos, inputDims));
+if (inBounds) {
+  result = texelFetch(input, inputTextureXYZ, 0);
+} else {
+  result = vec4(constantValue);
+}`,
 };
 
 type ModelNode = {
