@@ -1,15 +1,16 @@
 "use client";
 
-import { compareTensors, createSequentialTensor } from "@/lib/tests/testHelpers";
-import { convertShapeToTexture2DShape } from "@/lib/wedge/buffersAndTextures";
-import { defaultOptions } from "@/lib/wedge/constants";
-import { createWedge } from "@/lib/wedge/create";
-import { padChannels } from "@/lib/wedge/transforms";
-import { WedgeOptions } from "@/lib/wedge/types";
-import * as tf from '@tensorflow/tfjs';
-import { expect } from "chai";
-import React from "react";
-import { Test, TestContainer } from "react-browser-tests";
+import { compareTensors, createSequentialTensor } from "@wedge/core/tests/testHelpers";
+import { convertShapeToTexture2DShape } from "@wedge/core/backends/webgl/buffersAndTextures";
+import { defaultOptions } from "@wedge/core/constants";
+import { createWedge } from "@wedge/core/create";
+import { padChannels } from "@wedge/core/transforms";
+import { WedgeOptions } from "@wedge/core/backends/webgl/types";
+import * as tfOriginal from '@tensorflow/tfjs';
+import { expect, Test, TestContainer } from "react-browser-tests";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tf = tfOriginal as any;
 
 const defaultOptionsWithoutBatchDim: WedgeOptions = {
   ...defaultOptions,
@@ -20,7 +21,7 @@ type ConvLayerArgs = {
   kernelSize: number,
   filters: number,
   padding: "valid" | "same",
-  weights?: tf.Tensor[],
+  weights?: any[],
   inputDepth?: number,
   kernelInitializer?: any,
   biasInitializer?: any,
@@ -28,21 +29,21 @@ type ConvLayerArgs = {
 }
 
 async function predictAndCompare(
-  input: tf.SymbolicTensor,
+  input: any,
   convLayerArgs: ConvLayerArgs,
   inputDimension: number,
   inputDepth: number,
   numConvLayers: number = 1,
   nnShadersOptions?: WedgeOptions) {
 
-  let result = tf.layers.conv2d(convLayerArgs).apply(input) as tf.SymbolicTensor;
+  let result = tf.layers.conv2d(convLayerArgs).apply(input);
 
   for (let i = 0; i < numConvLayers - 1; i++) {
-    result = tf.layers.conv2d(convLayerArgs).apply(result) as tf.SymbolicTensor;
+    result = tf.layers.conv2d(convLayerArgs).apply(result);
   }
 
-  // result = tf.layers.conv2d(convLayerArgs).apply(result) as tf.SymbolicTensor;
-  const model: tf.LayersModel = tf.model({ inputs: input, outputs: result });
+  // result = tf.layers.conv2d(convLayerArgs).apply(result);
+  const model = tf.model({ inputs: input, outputs: result });
 
   const nns = await createWedge(model, nnShadersOptions || defaultOptionsWithoutBatchDim);
 
@@ -53,10 +54,12 @@ async function predictAndCompare(
   // tf.print(inputTensor.squeeze([0]));
 
   // Get prediction from TensorFlow.js model
-  const tfjsPrediction = model.predict(inputTensor) as tf.Tensor;
+  const tfjsPrediction = model.predict(inputTensor);
 
-  const inputShape = [inputDimension, inputDimension, inputDepth]
-  const channelPaddedInput = padChannels(inputTensor, "testInput");
+  // For Wedge: squeeze batch dimension if hasBatchDimension is false, then pad channels
+  const options = nnShadersOptions || defaultOptionsWithoutBatchDim;
+  const inputForWedge = options.hasBatchDimension ? inputTensor : tf.squeeze(inputTensor, [0]);
+  const channelPaddedInput = padChannels(inputForWedge, "testInput");
   const [textWidth, textHeight, _] = convertShapeToTexture2DShape(channelPaddedInput.shape, "testInput");
   let channelPaddedAndTexturePadded = new Float32Array(textWidth * textHeight * 4);
   channelPaddedAndTexturePadded.set(channelPaddedInput.dataSync(), 0);
@@ -88,7 +91,7 @@ async function createConvLayerTest({
   strides = 1,
   nnShadersOptions = defaultOptionsWithoutBatchDim
 }: ConvLayerTestArgs) {
-  const input: tf.SymbolicTensor = tf.input({ shape: [inputDimension, inputDimension, inputDepth] });
+  const input = tf.input({ shape: [inputDimension, inputDimension, inputDepth] });
 
   let convLayerArgs: ConvLayerArgs = {
     filters,
@@ -98,7 +101,7 @@ async function createConvLayerTest({
     // weights: []
   };
 
-  let kernelWeights: tf.Tensor;
+  let kernelWeights: any;
 
   if (useInitializers) {
     // Use constant initializers

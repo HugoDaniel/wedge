@@ -1,11 +1,12 @@
 "use client"
 
-import { compareTensors, createSequentialTensor } from "@/lib/tests/testHelpers";
-import { createWedge } from "@/lib/wedge/create";
-import * as tf from '@tensorflow/tfjs';
-import { expect } from "chai";
-import React from "react";
-import { Test, TestContainer } from "react-browser-tests";
+import { compareTensors, createSequentialTensor } from "@wedge/core/tests/testHelpers";
+import { createWedge } from "@wedge/core/create";
+import * as tfOriginal from '@tensorflow/tfjs';
+import { expect, Test, TestContainer } from "react-browser-tests";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tf = tfOriginal as any;
 
 export function SingleInputOpsTests() {
 
@@ -24,15 +25,15 @@ export function SingleInputOpsTests() {
       const sequentialInput = tf.input({ shape });
 
       // Add the sequential input and zero input
-      let result = tf.layers.reLU().apply(sequentialInput) as tf.SymbolicTensor;
+      const result = tf.layers.reLU().apply(sequentialInput);
 
-      const model: tf.LayersModel = tf.model({ inputs: sequentialInput, outputs: result });
+      const model = tf.model({ inputs: sequentialInput, outputs: result });
 
       const nns = await createWedge(model);
 
       const unsqueezedSequentialData = tf.expandDims(sequentialData, 0);
-      const tfjsPrediction = model.predict(unsqueezedSequentialData) as tf.Tensor;
-      const nnsPrediction = nns.predict([sequentialDataArray]) as tf.Tensor;
+      const tfjsPrediction = model.predict(unsqueezedSequentialData);
+      const nnsPrediction = nns.predict([sequentialDataArray]);
 
       const compareResult = compareTensors(tf.squeeze(tfjsPrediction, [0]), nnsPrediction, 0.1);
 
