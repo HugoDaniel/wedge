@@ -57,6 +57,9 @@ export default function Home() {
           <Link href="/model" style={styles.primaryButton}>
             Visualize Model
           </Link>
+          <Link href="/editor" style={styles.secondaryButton}>
+            Graph Editor
+          </Link>
           <Link href="/tests" style={styles.secondaryButton}>
             Run Tests
           </Link>

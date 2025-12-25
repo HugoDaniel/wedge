@@ -11,6 +11,7 @@
   "dependencies": {
     "@wedge/core": "file:../../packages/core",
     "@wedge/ui-react": "file:../../packages/ui-react",
+    "@xyflow/react": "^12.3.0",
     "next": "^16.1.1",
     "react": "^19.0.0",
     "react-browser-tests": "^0.0.9",
